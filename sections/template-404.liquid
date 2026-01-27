@@ -1,0 +1,223 @@
+<div class="min-h-screen bg-gray-50 flex flex-col"
+     x-data="{ show: false }" 
+     x-init="setTimeout(() => show = true, 100)">
+
+  <div class="flex-grow flex flex-col justify-center py-16 px-4 sm:px-6 lg:px-8">
+    
+    <div class="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        
+        <div class="text-center lg:text-left"
+             x-show="show" 
+             x-transition:enter="transition ease-out duration-700"
+             x-transition:enter-start="opacity-0 -translate-x-10"
+             x-transition:enter-end="opacity-100 translate-x-0">
+             
+            <p class="text-sm font-bold tracking-widest uppercase mb-2" style="color: {{ section.settings.accent_color }}">
+                {{ section.settings.subtext_title }}
+            </p>
+
+            <h1 class="text-7xl sm:text-9xl font-extrabold text-gray-900 tracking-tight leading-none mb-6">
+                404
+            </h1>
+
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">
+                Page not found.
+            </h2>
+            
+            <p class="text-lg text-gray-500 mb-8 max-w-md mx-auto lg:mx-0">
+                {{ section.settings.main_text }}
+            </p>
+
+            {% if section.settings.show_search %}
+                <form action="{{ routes.search_url }}" method="get" class="w-full max-w-md mx-auto lg:mx-0 mb-8 relative group">
+                    <div class="relative flex items-center">
+                        <input 
+                            type="text" 
+                            name="q" 
+                            placeholder="Search our store..." 
+                            class="w-full bg-white border border-gray-300 text-gray-700 rounded-full py-4 pl-6 pr-14 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-shadow duration-300"
+                            style="--tw-ring-color: {{ section.settings.accent_color }};"
+                        >
+                        <button type="submit" class="absolute right-2 top-2 bottom-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full p-2 transition-colors duration-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+            {% endif %}
+
+            <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                <a href="{{ section.settings.button_url }}" 
+                   class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-full shadow-lg text-white transform transition hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2"
+                   style="background-color: {{ section.settings.accent_color }};">
+                    {{ section.settings.button_label }}
+                </a>
+                
+                <a href="{{ routes.root_url }}" class="text-base font-medium text-gray-600 hover:text-gray-900 transition-colors">
+                    Back to Home &rarr;
+                </a>
+            </div>
+        </div>
+
+        <div class="hidden lg:block relative"
+             x-show="show" 
+             x-transition:enter="transition ease-out duration-1000 delay-200"
+             x-transition:enter-start="opacity-0 translate-x-10"
+             x-transition:enter-end="opacity-100 translate-x-0">
+             
+             <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full opacity-20 filter blur-3xl animate-pulse" 
+                  style="background-color: {{ section.settings.accent_color }}"></div>
+             
+             <div class="relative bg-white p-8 rounded-3xl shadow-2xl border border-gray-100 transform rotate-2 hover:rotate-0 transition-transform duration-500">
+                <div class="aspect-w-4 aspect-h-3 bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center">
+                    <svg class="h-32 w-32 text-gray-300" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M13 13h-2V7h2m0 10h-2v-2h2M12 2A10 10 0 1 0 22 12 10 10 0 0 0 12 2z"></path>
+                    </svg>
+                    <p class="absolute mt-32 text-gray-400 font-medium">Lost?</p>
+                </div>
+                <div class="mt-6 space-y-2">
+                    <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+                </div>
+             </div>
+        </div>
+    </div>
+  </div>
+
+  {% if section.settings.show_collection and section.settings.collection != blank %}
+    <div class="bg-white py-16 border-t border-gray-100"
+         x-show="show"
+         x-transition:enter="transition ease-out duration-1000 delay-500"
+         x-transition:enter-start="opacity-0 translate-y-10"
+         x-transition:enter-end="opacity-100 translate-y-0">
+         
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-2xl font-bold text-gray-900 tracking-tight">
+                    {{ section.settings.collection_title }}
+                </h2>
+                <div class="w-16 h-1 mx-auto mt-4 rounded" style="background-color: {{ section.settings.accent_color }}"></div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                {% for product in collections[section.settings.collection].products limit: 4 %}
+                    <div class="group relative bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 overflow-hidden">
+                        
+                        <div class="w-full h-64 bg-gray-200 relative overflow-hidden">
+                            {% if product.featured_image %}
+                                {% comment %} <img src="{{ product.featured_image | image_url: width: 600 }}" 
+                                     alt="{{ product.featured_image.alt }}" 
+                                     class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500"> {% endcomment %}
+                            {% else %}
+                                 {{ 'product-1' | placeholder_svg_tag: 'w-full h-full object-cover object-center text-gray-400' }}
+                            {% endif %}
+                            
+                            {% unless product.available %}
+                                <div class="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+                                    Sold Out
+                                </div>
+                            {% endunless %}
+                        </div>
+
+                        <div class="p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-1">
+                                <a href="{{ product.url }}">
+                                    <span aria-hidden="true" class="absolute inset-0"></span>
+                                    {{ product.title }}
+                                </a>
+                            </h3>
+                            <p class="text-sm text-gray-500 mb-3 truncate">
+                                {{ product.description | strip_html | truncatewords: 8 }}
+                            </p>
+                            <div class="flex items-center justify-between">
+                                <p class="text-lg font-bold" style="color: {{ section.settings.accent_color }}">
+                                    {{ product.price | money }}
+                                </p>
+                                {% if product.compare_at_price > product.price %}
+                                    <p class="text-sm text-gray-400 line-through">
+                                        {{ product.compare_at_price | money }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+  {% endif %}
+</div>
+
+{% schema %}
+{
+  "name": "404 Page (Modern)",
+  "settings": [
+    {
+        "type": "header",
+        "content": "Hero Content"
+    },
+    {
+        "type": "text",
+        "id": "subtext_title",
+        "default": "404 Error",
+        "label": "Subtext / Tagline"
+    },
+    {
+        "type": "text",
+        "id": "main_text",
+        "default": "We couldn't find the page you were looking for. Try searching or check out our best sellers.",
+        "label": "Description Paragraph"
+    },
+    {
+        "type": "header",
+        "content": "Actions"
+    },
+    {
+        "type": "checkbox",
+        "id": "show_search",
+        "default": true,
+        "label": "Show Search Bar"
+    },
+    {
+        "type": "text",
+        "id": "button_label",
+        "default": "Back to Shop",
+        "label": "Primary Button Text"
+    },
+    {
+        "type": "url",
+        "id": "button_url",
+        "label": "Primary Button Link",
+        "default": "/collections/all"
+    },
+    {
+        "type": "color",
+        "id": "accent_color",
+        "label": "Brand Accent Color",
+        "default": "#4F46E5"
+    },
+    {
+        "type": "header",
+        "content": "Product Showcase"
+    },
+    {
+        "type": "checkbox",
+        "id": "show_collection",
+        "default": true,
+        "label": "Enable Product Row"
+    },
+    {
+        "type": "text",
+        "id": "collection_title",
+        "default": "Popular right now",
+        "label": "Section Title"
+    },
+    {
+        "type": "collection",
+        "id": "collection",
+        "label": "Collection to Display"
+    }
+  ]
+}
+{% endschema %}
