@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "template": {
@@ -48,17 +57,17 @@
         "comments"
       ],
       "settings": {
-        "container_width": "medium",
+        "container_width": "wide",
         "padding_top": 60,
         "padding_bottom": 60,
-        "bg_color": "#FFFFFF",
+        "bg_color": "#ffffff",
         "title_color": "#111827",
         "text_color": "#374151",
         "link_color": "#000000",
-        "meta_color": "#9CA3AF",
-        "border_color": "#E5E7EB",
-        "comment_bg_color": "#F9FAFB",
-        "tag_bg_color": "#F3F4F6",
+        "meta_color": "#9ca3af",
+        "border_color": "#e5e7eb",
+        "comment_bg_color": "#f9fafb",
+        "tag_bg_color": "#f3f4f6",
         "tag_text_color": "#374151"
       }
     }
