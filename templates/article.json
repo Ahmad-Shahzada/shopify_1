@@ -37,12 +37,6 @@
             "alignment": "left"
           }
         },
-        "social_share": {
-          "type": "share",
-          "settings": {
-            "alignment": "left"
-          }
-        },
         "comments": {
           "type": "article_comments",
           "settings": {}
@@ -53,7 +47,6 @@
         "hero_image",
         "main_content",
         "tags",
-        "social_share",
         "comments"
       ],
       "settings": {
