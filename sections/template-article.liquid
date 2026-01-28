@@ -1,0 +1,398 @@
+{% comment %} 
+  GLOBAL CONTAINER LOGIC
+  Determines the max-width based on the section settings.
+{% endcomment %}
+{% case section.settings.container_width %}
+  {% when 'narrow' %}
+    {% assign width_class = 'max-w-2xl' %}
+  {% when 'medium' %}
+    {% assign width_class = 'max-w-3xl' %}
+  {% when 'wide' %}
+    {% assign width_class = 'max-w-5xl' %}
+{% endcase %}
+
+{% comment %} 
+  DYNAMIC STYLES 
+  Injects user-selected colors and spacing into CSS variables.
+{% endcomment %}
+<style>
+  #shopify-section-{{ section.id }} .article-section {
+    background-color: {{ section.settings.bg_color }};
+    padding-top: {{ section.settings.padding_top }}px;
+    padding-bottom: {{ section.settings.padding_bottom }}px;
+    color: {{ section.settings.text_color }};
+  }
+  
+  #shopify-section-{{ section.id }} h1, 
+  #shopify-section-{{ section.id }} h2, 
+  #shopify-section-{{ section.id }} h3 {
+    color: {{ section.settings.title_color }};
+  }
+
+  #shopify-section-{{ section.id }} a {
+    color: {{ section.settings.link_color }};
+    transition: opacity 0.2s ease;
+  }
+  
+  #shopify-section-{{ section.id }} .meta-text {
+    color: {{ section.settings.meta_color }};
+  }
+
+  /* Block Spacing */
+  .article-block { margin-bottom: 2rem; }
+  
+  /* Rich Text Overrides for Professional Typography */
+  .prose h2, .prose h3, .prose h4 { color: {{ section.settings.title_color }}; font-weight: 700; margin-top: 2em; margin-bottom: 0.75em; line-height: 1.3; }
+  .prose p { margin-bottom: 1.5em; line-height: 1.8; font-size: 1.125rem; color: {{ section.settings.text_color }}; }
+  .prose ul, .prose ol { margin-bottom: 1.5em; padding-left: 1.5em; color: {{ section.settings.text_color }}; }
+  .prose ul { list-style-type: disc; }
+  .prose ol { list-style-type: decimal; }
+  .prose li { margin-bottom: 0.5em; }
+  .prose a { text-decoration: underline; font-weight: 600; color: {{ section.settings.link_color }}; }
+  .prose blockquote { 
+    border-left: 4px solid {{ section.settings.link_color }}; 
+    padding-left: 1.25em; 
+    font-style: italic; 
+    margin: 2em 0;
+    color: {{ section.settings.title_color }};
+  }
+  .prose img { border-radius: 0.5rem; max-width: 100%; height: auto; }
+
+  /* Utility Classes for Alignment */
+  .text-left { text-align: left; }
+  .text-center { text-align: center; }
+  .text-right { text-align: right; }
+  
+  .justify-start { justify-content: flex-start; }
+  .justify-center { justify-content: center; }
+  .justify-end { justify-content: flex-end; }
+
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    #shopify-section-{{ section.id }} .article-section {
+      padding-top: {{ section.settings.padding_top | divided_by: 1.5 }}px;
+      padding-bottom: {{ section.settings.padding_bottom | divided_by: 1.5 }}px;
+    }
+    .text-4xl { font-size: 2.25rem; }
+  }
+</style>
+
+<article class="article-section min-h-screen antialiased" itemscope itemtype="http://schema.org/BlogPosting">
+  
+  {% for block in section.blocks %}
+    <div class="{{ width_class }} mx-auto px-6 article-block" {{ block.shopify_attributes }}>
+      
+      {% case block.type %}
+        
+        {% comment %} === BLOCK: HEADER (Title, Date, Author) === {% endcomment %}
+        {% when 'article_header' %}
+          <header class="w-full text-{{ block.settings.alignment }}">
+            
+            {% if block.settings.show_breadcrumbs %}
+              <nav class="mb-6">
+                <a href="{{ blog.url }}" class="text-xs font-bold tracking-widest uppercase hover:opacity-75 transition-opacity" style="color: {{ section.settings.meta_color }}">
+                  &larr; {{ blog.title }}
+                </a>
+              </nav>
+            {% endif %}
+
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6" itemprop="headline">
+              {{ article.title }}
+            </h1>
+
+            <div class="flex flex-wrap gap-4 text-sm meta-text {% if block.settings.alignment == 'center' %}justify-center{% elsif block.settings.alignment == 'right' %}justify-end{% else %}justify-start{% endif %}">
+              {% if block.settings.show_author %}
+                <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+                  <span itemprop="name" class="font-medium">By {{ article.author }}</span>
+                </span>
+              {% endif %}
+              
+              {% if block.settings.show_date %}
+                {% if block.settings.show_author %}<span>|</span>{% endif %}
+                <time datetime="{{ article.published_at | date: '%Y-%m-%d' }}" itemprop="datePublished">
+                  {{ article.published_at | date: format: 'date' }}
+                </time>
+              {% endif %}
+            </div>
+          </header>
+
+
+        {% comment %} === BLOCK: FEATURED IMAGE === {% endcomment %}
+        {% when 'featured_image' %}
+          {% if article.image %}
+            <div class="relative overflow-hidden rounded-xl shadow-sm w-full 
+                 {% if block.settings.image_height == 'small' %}aspect-w-16 aspect-h-6{% elsif block.settings.image_height == 'medium' %}aspect-w-16 aspect-h-9{% else %}aspect-w-1 aspect-h-1{% endif %}">
+              {{ article.image | image_url: width: 1400 | image_tag:
+                loading: 'eager',
+                class: 'w-full h-full object-cover',
+                alt: article.image.alt | default: article.title
+              }}
+            </div>
+          {% endif %}
+
+
+        {% comment %} === BLOCK: ARTICLE CONTENT === {% endcomment %}
+        {% when 'article_content' %}
+          <div class="prose w-full max-w-none focus:outline-none" itemprop="articleBody">
+            {{ article.content }}
+          </div>
+
+
+        {% comment %} === BLOCK: TAGS === {% endcomment %}
+        {% when 'article_tags' %}
+          {% if article.tags.size > 0 %}
+            <div class="flex flex-wrap gap-2 pt-4 border-t" style="border-color: {{ section.settings.border_color }}; justify-content: {{ block.settings.alignment }}">
+              {% for tag in article.tags %}
+                <a href="{{ blog.url }}/tagged/{{ tag | handle }}" class="px-3 py-1 text-xs font-medium rounded-full transition-colors" style="background-color: {{ section.settings.tag_bg_color }}; color: {{ section.settings.tag_text_color }}">
+                  #{{ tag }}
+                </a>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+
+        {% comment %} === BLOCK: SHARE ICONS === {% endcomment %}
+        {% when 'share' %}
+          <div class="flex items-center space-x-5 pt-4" style="justify-content: {{ block.settings.alignment }}">
+            <span class="text-xs font-bold uppercase tracking-wide meta-text">Share</span>
+            <a href="https://www.facebook.com/sharer.php?u={{ shop.url | append: article.url }}" target="_blank" class="hover:opacity-75 transition-opacity" style="color: {{ section.settings.meta_color }}">
+              {% render 'facebook' %}
+            </a>
+            <a href="https://twitter.com/share?url={{ shop.url | append: article.url }}&text={{ article.title }}" target="_blank" class="hover:opacity-75 transition-opacity" style="color: {{ section.settings.meta_color }}">
+              {% render 'twitter' %}
+            </a>
+          </div>
+
+
+        {% comment %} === BLOCK: COMMENTS === {% endcomment %}
+        {% when 'article_comments' %}
+          {% if blog.comments_enabled? %}
+            <div class="mt-12 rounded-2xl p-8 sm:p-12 border border-gray-100 shadow-sm" style="background-color: {{ section.settings.comment_bg_color }}">
+              
+              <h2 class="text-2xl font-bold mb-8" style="color: {{ section.settings.title_color }}">Comments ({{ article.comments_count }})</h2>
+
+              {% paginate article.comments by 5 %}
+                <div class="space-y-10 mb-12">
+                  {% for comment in article.comments %}
+                    <div class="flex space-x-4">
+                      <div class="flex-shrink-0">
+                        <span class="inline-flex items-center justify-center h-10 w-10 rounded-full bg-white border border-gray-200 text-sm font-bold text-gray-500">
+                          {{ comment.author | slice: 0 }}
+                        </span>
+                      </div>
+                      <div>
+                        <div class="flex items-center gap-2 mb-1">
+                          <h3 class="text-sm font-bold" style="color: {{ section.settings.title_color }}">{{ comment.author }}</h3>
+                          <span class="text-xs opacity-75" style="color: {{ section.settings.meta_color }}">&bull; {{ comment.created_at | date: format: 'date' }}</span>
+                        </div>
+                        <div class="text-sm leading-relaxed" style="color: {{ section.settings.text_color }}">
+                          {{ comment.content }}
+                        </div>
+                      </div>
+                    </div>
+                  {% endfor %}
+                  {% if paginate.pages > 1 %}
+                    <div class="flex justify-center pt-4">{{ paginate | default_pagination }}</div>
+                  {% endif %}
+                </div>
+              {% endpaginate %}
+
+              <div class="border-t pt-10" style="border-color: {{ section.settings.border_color }}">
+                {% form 'new_comment', article %}
+                  {% if form.errors %}
+                     <div class="mb-4 p-4 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">{{ form.errors | default_errors }}</div>
+                  {% elsif form.posted_successfully? %}
+                     <div class="mb-4 p-4 bg-green-50 text-green-700 text-sm rounded-lg border border-green-100">Comment posted successfully!</div>
+                  {% endif %}
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <input type="text" name="comment[author]" placeholder="Name" class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-1 transition-all" style="color: {{ section.settings.text_color }};" required>
+                    <input type="email" name="comment[email]" placeholder="Email" class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-1 transition-all" style="color: {{ section.settings.text_color }}" required>
+                  </div>
+                  <textarea name="comment[body]" rows="4" placeholder="Write your comment here..." class="w-full px-4 py-3 mb-6 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-1 transition-all" style="color: {{ section.settings.text_color }}" required></textarea>
+                  <button type="submit" class="inline-flex items-center justify-center px-8 py-3 text-sm font-medium text-white rounded-lg shadow-lg hover:shadow-xl transition-all hover:opacity-90" style="background-color: {{ section.settings.link_color }}">Post Comment</button>
+                {% endform %}
+              </div>
+            </div>
+          {% endif %}
+
+      {% endcase %}
+    </div>
+  {% endfor %}
+
+</article>
+
+{% comment %} SEO JSON-LD {% endcomment %}
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "Article",
+  "articleBody": {{ article.content | strip_html | json }},
+  "headline": {{ article.title | json }},
+  {% if article.image %}"image": ["{{ article | image_url: width: 1200 | prepend: "https:" }}"],{% endif %}
+  "datePublished": "{{ article.published_at | date: '%Y-%m-%dT%H:%M:%SZ' }}",
+  "author": { "@type": "Person", "name": {{ article.author | json }} },
+  "publisher": { "@type": "Organization", "name": {{ shop.name | json }} }
+}
+</script>
+
+{% schema %}
+{
+  "name": "Blog",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Global Layout"
+    },
+    {
+      "type": "select",
+      "id": "container_width",
+      "label": "Global Reading Width",
+      "default": "medium",
+      "options": [
+        { "value": "narrow", "label": "Narrow" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "wide", "label": "Wide" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top Padding",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom Padding",
+      "default": 60
+    },
+    {
+      "type": "header",
+      "content": "Global Colors"
+    },
+    { "type": "color", "id": "bg_color", "label": "Page Background", "default": "#FFFFFF" },
+    { "type": "color", "id": "title_color", "label": "Headings Color", "default": "#111827" },
+    { "type": "color", "id": "text_color", "label": "Body Text Color", "default": "#374151" },
+    { "type": "color", "id": "link_color", "label": "Accents & Links", "default": "#000000" },
+    { "type": "color", "id": "meta_color", "label": "Meta Text", "default": "#9CA3AF" },
+    { "type": "color", "id": "border_color", "label": "Dividers", "default": "#E5E7EB" },
+    { "type": "color", "id": "comment_bg_color", "label": "Comments Box", "default": "#F9FAFB" },
+    { "type": "color", "id": "tag_bg_color", "label": "Tag Background", "default": "#F3F4F6" },
+    { "type": "color", "id": "tag_text_color", "label": "Tag Text", "default": "#374151" }
+  ],
+  "blocks": [
+    {
+      "type": "article_header",
+      "name": "Title & Meta",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "select",
+          "id": "alignment",
+          "label": "Text Alignment",
+          "default": "center",
+          "options": [
+            { "value": "left", "label": "Left" },
+            { "value": "center", "label": "Center" },
+            { "value": "right", "label": "Right" }
+          ]
+        },
+        { "type": "checkbox", "id": "show_breadcrumbs", "default": true, "label": "Show Back Link" },
+        { "type": "checkbox", "id": "show_author", "default": true, "label": "Show Author" },
+        { "type": "checkbox", "id": "show_date", "default": true, "label": "Show Date" }
+      ]
+    },
+    {
+      "type": "featured_image",
+      "name": "Featured Image",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "select",
+          "id": "image_height",
+          "label": "Image Height",
+          "default": "medium",
+          "options": [
+            { "value": "small", "label": "Small (Banner)" },
+            { "value": "medium", "label": "Medium (Cinematic)" },
+            { "value": "large", "label": "Large (Portrait)" }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "article_content",
+      "name": "Article Content",
+      "limit": 1,
+      "settings": []
+    },
+    {
+      "type": "article_tags",
+      "name": "Tags",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "select",
+          "id": "alignment",
+          "label": "Alignment",
+          "default": "left",
+          "options": [
+            { "value": "left", "label": "Left" },
+            { "value": "center", "label": "Center" },
+            { "value": "right", "label": "Right" }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "share",
+      "name": "Share Buttons",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "select",
+          "id": "alignment",
+          "label": "Alignment",
+          "default": "left",
+          "options": [
+            { "value": "left", "label": "Left" },
+            { "value": "center", "label": "Center" },
+            { "value": "right", "label": "Right" }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "article_comments",
+      "name": "Comments",
+      "limit": 1,
+      "settings": []
+    }
+  ],
+  "presets": [
+    {
+      "name": "Article Template",
+      "settings": {
+        "container_width": "medium"
+      },
+      "blocks": [
+        { "type": "article_header" },
+        { "type": "featured_image" },
+        { "type": "article_content" },
+        { "type": "article_tags" },
+        { "type": "share" },
+        { "type": "article_comments" }
+      ]
+    }
+  ]
+}
+{% endschema %}

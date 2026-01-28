@@ -1,0 +1,69 @@
+{
+  "sections": {
+    "template": {
+      "type": "template-article",
+      "blocks": {
+        "header": {
+          "type": "article_header",
+          "settings": {
+            "alignment": "center",
+            "show_breadcrumbs": true,
+            "show_author": true,
+            "show_date": true
+          }
+        },
+        "hero_image": {
+          "type": "featured_image",
+          "settings": {
+            "image_height": "medium"
+          }
+        },
+        "main_content": {
+          "type": "article_content",
+          "settings": {}
+        },
+        "tags": {
+          "type": "article_tags",
+          "settings": {
+            "alignment": "left"
+          }
+        },
+        "social_share": {
+          "type": "share",
+          "settings": {
+            "alignment": "left"
+          }
+        },
+        "comments": {
+          "type": "article_comments",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "header",
+        "hero_image",
+        "main_content",
+        "tags",
+        "social_share",
+        "comments"
+      ],
+      "settings": {
+        "container_width": "medium",
+        "padding_top": 60,
+        "padding_bottom": 60,
+        "bg_color": "#FFFFFF",
+        "title_color": "#111827",
+        "text_color": "#374151",
+        "link_color": "#000000",
+        "meta_color": "#9CA3AF",
+        "border_color": "#E5E7EB",
+        "comment_bg_color": "#F9FAFB",
+        "tag_bg_color": "#F3F4F6",
+        "tag_text_color": "#374151"
+      }
+    }
+  },
+  "order": [
+    "template"
+  ]
+}
