@@ -1,0 +1,240 @@
+<style>
+  /* Minimal custom CSS to supplement Tailwind or base styles */
+  .cart-qty-input::-webkit-inner-spin-button,
+  .cart-qty-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  .cart-qty-input { -moz-appearance: textfield; }
+  .cart-progress-bar { transition: width 0.5s ease-in-out; }
+</style>
+
+<div class="cart-section {{ section.settings.bg_color }} min-h-screen py-12 md:py-20" data-section-id="{{ section.id }}">
+  <div class="max-w-6xl mx-auto px-6">
+
+    {%- if cart.item_count > 0 -%}
+      
+      <header class="mb-10 flex justify-between items-end border-b pb-6 border-gray-200">
+        <h1 class="text-4xl md:text-5xl font-black uppercase tracking-tighter">{{ section.settings.heading }}</h1>
+        <a href="{{ routes.all_products_collection_url }}" class="text-sm font-bold border-b-2 border-transparent hover:border-black transition-all pb-1 hidden md:block">
+          {{ section.settings.continue_shopping_text }} &rarr;
+        </a>
+      </header>
+
+      <form action="{{ routes.cart_url }}" method="post" id="cart-form" class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+        
+        <div class="lg:col-span-8">
+          
+         
+
+          <div class="hidden md:grid grid-cols-12 text-xs font-bold uppercase text-gray-500 mb-4 tracking-wider">
+            <div class="col-span-6">Product</div>
+            <div class="col-span-3 text-center">Quantity</div>
+            <div class="col-span-3 text-right">Total</div>
+          </div>
+
+          <div class="space-y-6 md:space-y-0 md:divide-y md:divide-gray-100">
+            {% for item in cart.items %}
+              <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-0 items-center py-4 cart-item" data-key="{{ item.key }}">
+                
+                <div class="col-span-6 flex items-center gap-4">
+                  {% if item.image %}
+                    <a href="{{ item.url }}" class="block shrink-0">
+                      <img src="{{ item.image | image_url: width: 200 }}" width="" height="" 
+                           alt="{{ item.image.alt | escape }}" 
+                           class="w-20 h-20 md:w-24 md:h-24 object-cover rounded bg-gray-50 border border-gray-100">
+                    </a>
+                  {% endif %}
+                  
+                  <div>
+                    <a href="{{ item.url }}" class="font-bold text-lg hover:underline leading-tight block">{{ item.product.title }}</a>
+                    
+                    {%- unless item.product.has_only_default_variant -%}
+                      <p class="text-sm text-gray-500 mt-1">{{ item.variant.title }}</p>
+                    {%- endunless -%}
+
+                    {%- if item.selling_plan_allocation -%}
+                       <p class="text-xs text-gray-500 mt-1">{{ item.selling_plan_allocation.selling_plan.name }}</p>
+                    {%- endif -%}
+
+                    <div class="mt-1 md:hidden font-medium">
+                      {{ item.final_price | money }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-span-3 flex justify-start md:justify-center items-center mt-2 md:mt-0">
+                  <div class="flex items-center border border-gray-300 rounded-md overflow-hidden">
+                    <button type="button" class="px-3 py-2 hover:bg-gray-100 transition" onclick="changeQty('{{ item.key }}', -1)">-</button>
+                    <input type="number" 
+                           name="updates[]" 
+                           id="updates_{{ item.key }}" 
+                           value="{{ item.quantity }}" 
+                           min="0"
+                           class="w-12 text-center border-none text-sm font-semibold cart-qty-input focus:ring-0 p-0"
+                           onchange="this.form.submit()">
+                    <button type="button" class="px-3 py-2 hover:bg-gray-100 transition" onclick="changeQty('{{ item.key }}', 1)">+</button>
+                  </div>
+                  <a href="{{ item.url_to_remove }}" class="ml-4 text-xs text-red-500 underline md:hidden">Remove</a>
+                </div>
+
+                <div class="col-span-3 text-right hidden md:block">
+                  {% if item.original_line_price != item.final_line_price %}
+                     <span class="text-xs line-through text-gray-400 block">{{ item.original_line_price | money }}</span>
+                  {% endif %}
+                  <span class="font-bold text-lg">{{ item.final_line_price | money }}</span>
+                  <div class="mt-1">
+                     <a href="{{ item.url_to_remove }}" class="text-xs text-gray-400 hover:text-red-600 transition">Remove</a>
+                  </div>
+                </div>
+
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="lg:col-span-4 mt-8 lg:mt-0">
+          <div class="bg-gray-50 p-6 md:p-8 rounded-xl sticky top-8 border border-gray-100">
+            <h2 class="text-xl font-bold mb-6">Order Summary</h2>
+
+            {% if section.settings.show_note %}
+              <div class="mb-4">
+                <label for="CartNote" class="block text-xs font-bold uppercase text-gray-500 mb-2">Order Instructions</label>
+                <textarea name="note" id="CartNote" class="w-full border-gray-200 rounded p-3 text-sm focus:border-black focus:ring-0 bg-white" rows="3" placeholder="Special instructions...">{{ cart.note }}</textarea>
+              </div>
+            {% endif %}
+
+            <div class="flex justify-between items-center mb-4 pt-4 border-t border-gray-200">
+              <span class="text-gray-600">Subtotal</span>
+              <span class="font-bold text-xl">{{ cart.total_price | money_with_currency }}</span>
+            </div>
+
+            <p class="text-xs text-gray-500 mb-6 text-center">
+              {{ section.settings.tax_notice }}
+            </p>
+
+            <button type="submit" name="checkout" class="w-full bg-black text-white font-bold py-4 rounded hover:opacity-80 transition-opacity uppercase tracking-widest text-sm mb-3">
+              Checkout
+            </button>
+            
+            {% if additional_checkout_buttons %}
+              <div class="additional-checkout-buttons">
+                {{ content_for_additional_checkout_buttons }}
+              </div>
+            {% endif %}
+
+            <div class="mt-6 text-center">
+              <a href="{{ routes.all_products_collection_url }}" class="text-sm underline hover:no-underline">Continue Shopping</a>
+            </div>
+          </div>
+        </div>
+        
+      </form>
+
+    {%- else -%}
+
+      <div class="flex flex-col items-center justify-center text-center py-20">
+        <div class="mb-6 opacity-20">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+        </div>
+        <h1 class="text-3xl md:text-5xl font-black uppercase mb-4">{{ section.settings.empty_heading }}</h1>
+        <p class="text-gray-500 mb-8 max-w-md">{{ section.settings.empty_text }}</p>
+        <a href="{{ routes.all_products_collection_url }}" class="bg-black text-white px-8 py-3 rounded font-bold hover:opacity-80 transition-all uppercase tracking-wider text-sm">
+          {{ section.settings.empty_button_text }}
+        </a>
+      </div>
+
+    {%- endif -%}
+  </div>
+</div>
+
+<script>
+  // Simple Quantity Logic
+  function changeQty(key, change) {
+    const input = document.getElementById(`updates_${key}`);
+    if (input) {
+      const newValue = parseInt(input.value) + change;
+      if (newValue >= 0) {
+        input.value = newValue;
+        // Optional: Debounce this if you want to delay submission
+        document.getElementById('cart-form').submit();
+      }
+    }
+  }
+</script>
+
+{% schema %}
+{
+  "name": "Main Cart",
+  "settings": [
+    {
+      "type": "header",
+      "content": "General Settings"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Your Cart"
+    },
+    {
+      "type": "text",
+      "id": "continue_shopping_text",
+      "label": "Continue Shopping Link Text",
+      "default": "Continue Shopping"
+    },
+    {
+      "type": "header",
+      "content": "Free Shipping Bar"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_shipping_bar",
+      "label": "Show Free Shipping Progress",
+      "default": true
+    },
+    {
+      "type": "number",
+      "id": "shipping_threshold",
+      "label": "Free Shipping Threshold ($)",
+      "default": 100,
+      "info": "Enter the amount without currency symbol"
+    },
+    {
+      "type": "header",
+      "content": "Cart Options"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_note",
+      "label": "Enable Order Notes",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "tax_notice",
+      "label": "Tax / Shipping Notice",
+      "default": "Taxes and shipping calculated at checkout"
+    },
+    {
+      "type": "header",
+      "content": "Empty Cart State"
+    },
+    {
+      "type": "text",
+      "id": "empty_heading",
+      "label": "Empty Heading",
+      "default": "Cart is Empty"
+    },
+    {
+      "type": "textarea",
+      "id": "empty_text",
+      "label": "Empty Subtext",
+      "default": "Looks like you haven't added anything to your cart yet."
+    },
+    {
+      "type": "text",
+      "id": "empty_button_text",
+      "label": "Button Text",
+      "default": "Start Shopping"
+    }
+  ]
+}
+{% endschema %}

@@ -1,4 +1,9 @@
-{% if paginate.pages > 1 %}
+{% comment %} 
+  Snippet: pagination.liquid
+  Usage: {% render 'pagination', paginate: paginate %}
+{% endcomment %}
+
+{% if paginate.pages > 1 %} 
   <nav class="mt-24 flex justify-center items-center gap-4 md:gap-8" role="navigation" aria-label="Pagination">
     
     {% comment %} PREVIOUS BUTTON {% endcomment %}
@@ -33,7 +38,7 @@
               {{ part.title }}
             </span>
           {% else %}
-            {% comment %} This handles ellipses (...) {% endcomment %}
+            {% comment %} Handles ellipses (...) {% endcomment %}
             <span class="w-10 h-10 flex items-center justify-center opacity-30 text-sm font-bold">
               {{ part.title }}
             </span>
