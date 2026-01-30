@@ -1,0 +1,284 @@
+{% comment %} 
+  ULTRA-PREMIUM BLOG LISTING TEMPLATE
+  Added: Detailed Typography, Card UI Schema, and SEO ItemList Schema
+{% endcomment %}
+
+<style>
+  #shopify-section-{{ section.id }} .blog-container {
+    background-color: {{ section.settings.bg_color }};
+    color: {{ section.settings.text_color }};
+  }
+  
+  #shopify-section-{{ section.id }} .blog-heading {
+    font-size: {{ section.settings.heading_size_mobile }}px;
+    line-height: 1.1;
+  }
+
+  @media (min-width: 768px) {
+    #shopify-section-{{ section.id }} .blog-heading {
+      font-size: {{ section.settings.heading_size_desktop }}px;
+    }
+  }
+
+  #shopify-section-{{ section.id }} .article-card {
+    border-radius: {{ section.settings.card_radius }}rem;
+    {% if section.settings.enable_shadow %}
+    box-shadow: 0 10px 30px -15px rgba(0,0,0,0.1);
+    {% endif %}
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+  }
+  
+  #shopify-section-{{ section.id }} .article-card:hover {
+    transform: translateY(-12px);
+    {% if section.settings.enable_shadow %}
+    box-shadow: 0 20px 40px -15px rgba(0,0,0,0.2);
+    {% endif %}
+  }
+  
+  #shopify-section-{{ section.id }} .blog-title-gradient {
+    background: linear-gradient(to right, {{ section.settings.title_color }}, {{ section.settings.link_color }});
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Utility for uniform card heights */
+  .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+</style>
+
+<div class="blog-container py-16 md:py-24">
+  <div class="max-w-7xl mx-auto px-6">
+    
+    {% comment %} Blog Header {% endcomment %}
+    <header class="mb-20 text-{{ section.settings.header_alignment }}">
+      <h1 class="blog-heading font-black mb-6 blog-title-gradient uppercase tracking-tighter">
+        {{ blog.title }}
+      </h1>
+      {% if section.settings.blog_description != blank %}
+        <p class="max-w-2xl {% if section.settings.header_alignment == 'center' %}mx-auto{% endif %} opacity-70 text-lg md:text-xl leading-relaxed">
+          {{ section.settings.blog_description }}
+        </p>
+      {% endif %}
+    </header>
+
+    {% paginate blog.articles by section.settings.articles_per_page %}
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-{{ section.settings.grid_desktop }} gap-10">
+        {% for article in blog.articles %}
+          <article class="article-card flex flex-col group h-full bg-white overflow-hidden border border-gray-100 transition-all">
+            
+            {% comment %} Article Image {% endcomment %}
+            <a href="{{ article.url }}" class="block overflow-hidden aspect-[16/10] relative">
+              {% if article.image %}
+                {{ article.image | image_url: width: 800 | image_tag:
+                  loading: 'lazy',
+                  class: 'w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110',
+                  alt: article.image.alt | default: article.title
+                }}
+              {% else %}
+                <div class="w-full h-full bg-gray-100 flex items-center justify-center">
+                   <span class="opacity-20 font-black">NO IMAGE</span>
+                </div>
+              {% endif %}
+              
+              {% if section.settings.show_tags and article.tags.size > 0 %}
+                <span class="absolute top-4 left-4 bg-white px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase shadow-sm">
+                  {{ article.tags[0] }}
+                </span>
+              {% endif %}
+            </a>
+
+            {% comment %} Article Content {% endcomment %}
+            <div class="p-8 flex flex-col flex-grow">
+              <div class="flex items-center gap-4 mb-5">
+                {% if section.settings.show_date %}
+                  <span class="text-[10px] font-bold tracking-widest uppercase opacity-50">
+                    {{ article.published_at | date: "%b %d, %Y" }}
+                  </span>
+                {% endif %}
+                
+                {% if section.settings.show_author %}
+                  <span class="text-[10px] font-black tracking-widest uppercase" style="color: {{ section.settings.link_color }}">
+                    {{ article.author }}
+                  </span>
+                {% endif %}
+              </div>
+
+              <h2 class="text-2xl font-extrabold mb-4 line-clamp-2 leading-tight" style="color: {{ section.settings.title_color }}">
+                <a href="{{ article.url }}" class="hover:opacity-70 transition-opacity">{{ article.title }}</a>
+              </h2>
+
+              {% if section.settings.show_excerpt %}
+                <p class="text-gray-500 text-sm leading-relaxed mb-8 line-clamp-3">
+                  {{ article.excerpt_or_content | strip_html | truncatewords: 25 }}
+                </p>
+              {% endif %}
+
+              <div class="mt-auto flex items-center justify-between pt-6 border-t border-gray-50">
+                <a href="{{ article.url }}" class="text-[11px] font-black uppercase tracking-[0.2em] group-hover:opacity-50 transition-all" style="color: {{ section.settings.title_color }}">
+                  Explore <span class="ml-1 transition-transform group-hover:translate-x-2 inline-block">&rarr;</span>
+                </a>
+                
+                <span class="text-[9px] opacity-30 font-black uppercase tracking-widest">
+                  {% assign words = article.content | strip_html | size %}
+                  {{ words | divided_by: 200 | at_least: 1 }} MIN READ
+                </span>
+              </div>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+
+      {% comment %} Pagination {% endcomment %}
+      {% if paginate.pages > 1 %}
+        <nav class="mt-24 flex justify-center items-center gap-8" aria-label="Pagination">
+          {% if paginate.previous %}
+            <a href="{{ paginate.previous.url }}" class="hover:opacity-50 transition-opacity">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            </a>
+          {% endif %}
+
+          <div class="flex gap-4">
+            {% for part in paginate.parts %}
+              {% if part.is_link %}
+                <a href="{{ part.url }}" class="text-sm font-bold opacity-30 hover:opacity-100 transition-opacity">{{ part.title }}</a>
+              {% else %}
+                <span class="text-sm font-black border-b-2 border-black">{{ part.title }}</span>
+              {% endif %}
+            {% endfor %}
+          </div>
+
+          {% if paginate.next %}
+            <a href="{{ paginate.next.url }}" class="hover:opacity-50 transition-opacity">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
+          {% endif %}
+        </nav>
+      {% endif %}
+    {% endpaginate %}
+  </div>
+</div>
+
+{% comment %} SEO ITEMLIST SCHEMA {% endcomment %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "itemListElement": [
+    {% for article in blog.articles %}
+    {
+      "@type": "ListItem",
+      "position": {{ forloop.index }},
+      "url": "{{ shop.url }}{{ article.url }}",
+      "name": {{ article.title | json }}
+    }{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ]
+}
+</script>
+
+{% schema %}
+{
+  "name": "Premium Blog Listing",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Header Settings"
+    },
+    {
+      "type": "text",
+      "id": "blog_description",
+      "label": "Blog Description",
+      "default": "Explore our latest insights, tutorials, and premium tech updates."
+    },
+    {
+      "type": "select",
+      "id": "header_alignment",
+      "label": "Header Alignment",
+      "default": "center",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "heading_size_desktop",
+      "min": 40,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "label": "Heading Size (Desktop)",
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "heading_size_mobile",
+      "min": 30,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Heading Size (Mobile)",
+      "default": 48
+    },
+    {
+      "type": "header",
+      "content": "Grid & Pagination"
+    },
+    {
+      "type": "select",
+      "id": "grid_desktop",
+      "label": "Articles per row (Desktop)",
+      "default": "3",
+      "options": [
+        { "value": "2", "label": "2 Columns" },
+        { "value": "3", "label": "3 Columns" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "articles_per_page",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "label": "Articles per page",
+      "default": 6
+    },
+    {
+      "type": "header",
+      "content": "Card UI Design"
+    },
+    {
+      "type": "range",
+      "id": "card_radius",
+      "min": 0,
+      "max": 4,
+      "step": 0.5,
+      "unit": "rem",
+      "label": "Card Border Radius",
+      "default": 2
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_shadow",
+      "label": "Enable Premium Shadow",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Color Palette"
+    },
+    { "type": "color", "id": "bg_color", "label": "Section Background", "default": "#ffffff" },
+    { "type": "color", "id": "title_color", "label": "Heading Color", "default": "#111827" },
+    { "type": "color", "id": "link_color", "label": "Accent / Gradient Color", "default": "#2563eb" },
+    { "type": "color", "id": "text_color", "label": "Description Color", "default": "#374151" },
+    {
+      "type": "header",
+      "content": "Content Visibility"
+    },
+    { "type": "checkbox", "id": "show_author", "label": "Show Author", "default": true },
+    { "type": "checkbox", "id": "show_date", "label": "Show Date", "default": true },
+    { "type": "checkbox", "id": "show_excerpt", "label": "Show Excerpt", "default": true },
+    { "type": "checkbox", "id": "show_tags", "label": "Show First Tag", "default": true }
+  ]
+}
+{% endschema %}

@@ -1,7 +1,3 @@
-{% comment %} 
-  GLOBAL CONTAINER LOGIC
-  Determines the max-width based on the section settings.
-{% endcomment %}
 {% case section.settings.container_width %}
   {% when 'narrow' %}
     {% assign width_class = 'max-w-2xl' %}
@@ -11,10 +7,6 @@
     {% assign width_class = 'max-w-5xl' %}
 {% endcase %}
 
-{% comment %} 
-  DYNAMIC STYLES 
-  Injects user-selected colors and spacing into CSS variables.
-{% endcomment %}
 <style>
   #shopify-section-{{ section.id }} .article-section {
     background-color: {{ section.settings.bg_color }};
@@ -22,9 +14,9 @@
     padding-bottom: {{ section.settings.padding_bottom }}px;
     color: {{ section.settings.text_color }};
   }
-  
-  #shopify-section-{{ section.id }} h1, 
-  #shopify-section-{{ section.id }} h2, 
+
+  #shopify-section-{{ section.id }} h1,
+  #shopify-section-{{ section.id }} h2,
   #shopify-section-{{ section.id }} h3 {
     color: {{ section.settings.title_color }};
   }
@@ -33,15 +25,13 @@
     color: {{ section.settings.link_color }};
     transition: opacity 0.2s ease;
   }
-  
+
   #shopify-section-{{ section.id }} .meta-text {
     color: {{ section.settings.meta_color }};
   }
 
-  /* Block Spacing */
   .article-block { margin-bottom: 2rem; }
-  
-  /* Rich Text Overrides for Professional Typography */
+
   .prose h2, .prose h3, .prose h4 { color: {{ section.settings.title_color }}; font-weight: 700; margin-top: 2em; margin-bottom: 0.75em; line-height: 1.3; }
   .prose p { margin-bottom: 1.5em; line-height: 1.8; font-size: 1.125rem; color: {{ section.settings.text_color }}; }
   .prose ul, .prose ol { margin-bottom: 1.5em; padding-left: 1.5em; color: {{ section.settings.text_color }}; }
@@ -49,48 +39,46 @@
   .prose ol { list-style-type: decimal; }
   .prose li { margin-bottom: 0.5em; }
   .prose a { text-decoration: underline; font-weight: 600; color: {{ section.settings.link_color }}; }
-  .prose blockquote { 
-    border-left: 4px solid {{ section.settings.link_color }}; 
-    padding-left: 1.25em; 
-    font-style: italic; 
+  .prose blockquote {
+    border-left: 4px solid {{ section.settings.link_color }};
+    padding-left: 1.25em;
+    font-style: italic;
     margin: 2em 0;
     color: {{ section.settings.title_color }};
   }
   .prose img { border-radius: 0.5rem; max-width: 100%; height: auto; }
 
-  /* Utility Classes for Alignment */
   .text-left { text-align: left; }
   .text-center { text-align: center; }
   .text-right { text-align: right; }
-  
+
   .justify-start { justify-content: flex-start; }
   .justify-center { justify-content: center; }
   .justify-end { justify-content: flex-end; }
 
-  /* Responsive Adjustments */
   @media (max-width: 768px) {
     #shopify-section-{{ section.id }} .article-section {
       padding-top: {{ section.settings.padding_top | divided_by: 1.5 }}px;
       padding-bottom: {{ section.settings.padding_bottom | divided_by: 1.5 }}px;
     }
-    .text-4xl { font-size: 2.25rem; }
   }
 </style>
 
 <article class="article-section min-h-screen antialiased" itemscope itemtype="http://schema.org/BlogPosting">
-  
+  <meta itemprop="dateModified" content="{{ article.updated_at | date: '%Y-%m-%d' }}">
+
   {% for block in section.blocks %}
     <div class="{{ width_class }} mx-auto px-6 article-block" {{ block.shopify_attributes }}>
-      
       {% case block.type %}
-        
-        {% comment %} === BLOCK: HEADER (Title, Date, Author) === {% endcomment %}
         {% when 'article_header' %}
           <header class="w-full text-{{ block.settings.alignment }}">
-            
             {% if block.settings.show_breadcrumbs %}
-              <nav class="mb-6">
-                <a href="{{ blog.url }}" class="text-xs font-bold tracking-widest uppercase hover:opacity-75 transition-opacity" style="color: {{ section.settings.meta_color }}">
+              <nav class="mb-6" aria-label="Breadcrumb">
+                <a
+                  href="{{ blog.url }}"
+                  class="text-xs font-bold tracking-widest uppercase hover:opacity-75 transition-opacity"
+                  style="color: {{ section.settings.meta_color }}"
+                >
                   &larr; {{ blog.title }}
                 </a>
               </nav>
@@ -106,70 +94,96 @@
                   <span itemprop="name" class="font-medium">By {{ article.author }}</span>
                 </span>
               {% endif %}
-              
+
               {% if block.settings.show_date %}
-                {% if block.settings.show_author %}<span>|</span>{% endif %}
+                {% if block.settings.show_author -%}
+                  <span>|</span>
+                {%- endif %}
                 <time datetime="{{ article.published_at | date: '%Y-%m-%d' }}" itemprop="datePublished">
                   {{ article.published_at | date: format: 'date' }}
                 </time>
               {% endif %}
+
             </div>
           </header>
 
-
-        {% comment %} === BLOCK: FEATURED IMAGE === {% endcomment %}
         {% when 'featured_image' %}
           {% if article.image %}
-            <div class="relative overflow-hidden rounded-xl shadow-sm w-full 
-                 {% if block.settings.image_height == 'small' %}aspect-w-16 aspect-h-6{% elsif block.settings.image_height == 'medium' %}aspect-w-16 aspect-h-9{% else %}aspect-w-1 aspect-h-1{% endif %}">
-              {{ article.image | image_url: width: 1400 | image_tag:
-                loading: 'eager',
-                class: 'w-full h-full object-cover',
-                alt: article.image.alt | default: article.title
+            <div
+              class="
+                relative overflow-hidden rounded-xl shadow-sm w-full
+                {% if block.settings.image_height == 'small' %}aspect-w-16 aspect-h-6{% elsif block.settings.image_height == 'medium' %}aspect-w-16 aspect-h-9{% else %}aspect-w-1 aspect-h-1{% endif %}
+              "
+            >
+              {{
+                article.image
+                | image_url: width: 1400
+                | image_tag:
+                  loading: 'eager',
+                  fetchpriority: 'high',
+                  widths: '375, 550, 750, 1100, 1500',
+                  class: 'w-full h-full object-cover',
+                  alt: article.image.alt
+                | default: article.title, itemprop: 'image'
               }}
             </div>
           {% endif %}
 
-
-        {% comment %} === BLOCK: ARTICLE CONTENT === {% endcomment %}
         {% when 'article_content' %}
           <div class="prose w-full max-w-none focus:outline-none" itemprop="articleBody">
             {{ article.content }}
           </div>
 
-
-        {% comment %} === BLOCK: TAGS === {% endcomment %}
         {% when 'article_tags' %}
           {% if article.tags.size > 0 %}
-            <div class="flex flex-wrap gap-2 pt-4 border-t" style="border-color: {{ section.settings.border_color }}; justify-content: {{ block.settings.alignment }}">
+            <div
+              class="flex flex-wrap gap-2 pt-4 border-t"
+              style="border-color: {{ section.settings.border_color }}; justify-content: {{ block.settings.alignment | replace: 'left', 'flex-start' | replace: 'right', 'flex-end' }}"
+            >
               {% for tag in article.tags %}
-                <a href="{{ blog.url }}/tagged/{{ tag | handle }}" class="px-3 py-1 text-xs font-medium rounded-full transition-colors" style="background-color: {{ section.settings.tag_bg_color }}; color: {{ section.settings.tag_text_color }}">
+                <a
+                  href="{{ blog.url }}/tagged/{{ tag | handle }}"
+                  class="px-3 py-1 text-xs font-medium rounded-full transition-colors"
+                  style="background-color: {{ section.settings.tag_bg_color }}; color: {{ section.settings.tag_text_color }}"
+                >
                   #{{ tag }}
                 </a>
               {% endfor %}
             </div>
           {% endif %}
 
-
-        {% comment %} === BLOCK: SHARE ICONS === {% endcomment %}
         {% when 'share' %}
-          <div class="flex items-center space-x-5 pt-4" style="justify-content: {{ block.settings.alignment }}">
+          <div
+            class="flex items-center space-x-5 pt-4"
+            style="justify-content: {{ block.settings.alignment | replace: 'left', 'flex-start' | replace: 'right', 'flex-end' }}"
+          >
             <span class="text-xs font-bold uppercase tracking-wide meta-text">Share</span>
-            <a href="https://www.facebook.com/sharer.php?u={{ shop.url | append: article.url }}" target="_blank" class="hover:opacity-75 transition-opacity" style="color: {{ section.settings.meta_color }}">
-              {% render 'facebook' %}
+            <a
+              href="https://www.facebook.com/sharer.php?u={{ shop.url | append: article.url }}"
+              target="_blank"
+              aria-label="Share on Facebook"
+            >
+              {%- render 'facebook' -%}
             </a>
-            <a href="https://twitter.com/share?url={{ shop.url | append: article.url }}&text={{ article.title }}" target="_blank" class="hover:opacity-75 transition-opacity" style="color: {{ section.settings.meta_color }}">
-              {% render 'twitter' %}
+            <a
+              href="https://twitter.com/share?url={{ shop.url | append: article.url }}&text={{ article.title }}"
+              target="_blank"
+              aria-label="Share on Twitter"
+            >
+              {%- render 'twitter' -%}
             </a>
           </div>
 
-
-        {% comment %} === BLOCK: COMMENTS === {% endcomment %}
         {% when 'article_comments' %}
           {% if blog.comments_enabled? %}
-            <div class="mt-12 rounded-2xl p-8 sm:p-12 border border-gray-100 shadow-sm" style="background-color: {{ section.settings.comment_bg_color }}">
-              
-              <h2 class="text-2xl font-bold mb-8" style="color: {{ section.settings.title_color }}">Comments ({{ article.comments_count }})</h2>
+            <section
+              id="comments"
+              class="mt-12 rounded-2xl p-8 sm:p-12 border border-gray-100 shadow-sm"
+              style="background-color: {{ section.settings.comment_bg_color }}"
+            >
+              <h2 class="text-2xl font-bold mb-8" style="color: {{ section.settings.title_color }}">
+                Comments ({{ article.comments_count }})
+              </h2>
 
               {% paginate article.comments by 5 %}
                 <div class="space-y-10 mb-12">
@@ -182,8 +196,12 @@
                       </div>
                       <div>
                         <div class="flex items-center gap-2 mb-1">
-                          <h3 class="text-sm font-bold" style="color: {{ section.settings.title_color }}">{{ comment.author }}</h3>
-                          <span class="text-xs opacity-75" style="color: {{ section.settings.meta_color }}">&bull; {{ comment.created_at | date: format: 'date' }}</span>
+                          <h3 class="text-sm font-bold" style="color: {{ section.settings.title_color }}">
+                            {{ comment.author }}
+                          </h3>
+                          <span class="text-xs opacity-75" style="color: {{ section.settings.meta_color }}"
+                            >&bull; {{ comment.created_at | date: format: 'date' -}}
+                          </span>
                         </div>
                         <div class="text-sm leading-relaxed" style="color: {{ section.settings.text_color }}">
                           {{ comment.content }}
@@ -200,54 +218,83 @@
               <div class="border-t pt-10" style="border-color: {{ section.settings.border_color }}">
                 {% form 'new_comment', article %}
                   {% if form.errors %}
-                     <div class="mb-4 p-4 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">{{ form.errors | default_errors }}</div>
-                  {% elsif form.posted_successfully? %}
-                     <div class="mb-4 p-4 bg-green-50 text-green-700 text-sm rounded-lg border border-green-100">Comment posted successfully!</div>
+                    <div class="mb-4 p-4 bg-red-50 text-red-600 rounded-lg">{{ form.errors | default_errors }}</div>
+                  {% endif %}
+                  {% if form.posted_successfully? %}
+                    <div class="mb-4 p-4 bg-green-50 text-green-700 rounded-lg">Comment posted successfully!</div>
                   {% endif %}
 
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <input type="text" name="comment[author]" placeholder="Name" class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-1 transition-all" style="color: {{ section.settings.text_color }};" required>
-                    <input type="email" name="comment[email]" placeholder="Email" class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-1 transition-all" style="color: {{ section.settings.text_color }}" required>
+                    <input
+                      type="text"
+                      name="comment[author]"
+                      placeholder="Name"
+                      class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-1 focus:ring-black outline-none"
+                      required
+                    >
+                    <input
+                      type="email"
+                      name="comment[email]"
+                      placeholder="Email"
+                      class="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-1 focus:ring-black outline-none"
+                      required
+                    >
                   </div>
-                  <textarea name="comment[body]" rows="4" placeholder="Write your comment here..." class="w-full px-4 py-3 mb-6 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-1 transition-all" style="color: {{ section.settings.text_color }}" required></textarea>
-                  <button type="submit" class="inline-flex items-center justify-center px-8 py-3 text-sm font-medium text-white rounded-lg shadow-lg hover:shadow-xl transition-all hover:opacity-90" style="background-color: {{ section.settings.link_color }}">Post Comment</button>
+                  <textarea
+                    name="comment[body]"
+                    rows="4"
+                    placeholder="Message"
+                    class="w-full px-4 py-3 mb-6 bg-white border border-gray-200 rounded-lg focus:ring-1 focus:ring-black outline-none"
+                    required
+                  ></textarea>
+                  <button
+                    type="submit"
+                    class="inline-flex items-center justify-center px-8 py-3 text-sm font-medium text-white rounded-lg shadow-lg"
+                    style="background-color: {{ section.settings.link_color }}"
+                  >
+                    Post Comment
+                  </button>
                 {% endform %}
               </div>
-            </div>
+            </section>
           {% endif %}
-
       {% endcase %}
     </div>
   {% endfor %}
-
 </article>
 
-{% comment %} SEO JSON-LD {% endcomment %}
+{% comment %} FULL SCHEMA FOR SEO {% endcomment %}
 <script type="application/ld+json">
-{
-  "@context": "http://schema.org",
-  "@type": "Article",
-  "articleBody": {{ article.content | strip_html | json }},
-  "headline": {{ article.title | json }},
-  {% if article.image %}"image": ["{{ article | image_url: width: 1200 | prepend: "https:" }}"],{% endif %}
-  "datePublished": "{{ article.published_at | date: '%Y-%m-%dT%H:%M:%SZ' }}",
-  "author": { "@type": "Person", "name": {{ article.author | json }} },
-  "publisher": { "@type": "Organization", "name": {{ shop.name | json }} }
-}
+  {
+    "@context": "http://schema.org",
+    "@type": "BlogPosting",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "{{ shop.url | append: article.url }}"
+    },
+    "headline": {{ article.title | json }},
+    "description": {{ article.excerpt | default: article.content | strip_html | truncatewords: 30 | json }},
+    {% if article.image %}"image": ["{{ article.image | image_url: width: 1200 | prepend: "https:" }}"],{% endif %}
+    "datePublished": "{{ article.published_at | date: '%Y-%m-%dT%H:%M:%SZ' }}",
+    "dateModified": "{{ article.updated_at | default: article.published_at | date: '%Y-%m-%dT%H:%M:%SZ' }}",
+    "author": { "@type": "Person", "name": {{ article.author | json }} },
+    "publisher": {
+      "@type": "Organization",
+      "name": {{ shop.name | json }},
+      "logo": { "@type": "ImageObject", "url": "{{ settings.logo | image_url: width: 300 | prepend: 'https:' }}" }
+    }
+  }
 </script>
 
 {% schema %}
 {
-  "name": "Blog",
+  "name": "Premium SEO Article",
   "settings": [
-    {
-      "type": "header",
-      "content": "Global Layout"
-    },
+    { "type": "header", "content": "Global Layout" },
     {
       "type": "select",
       "id": "container_width",
-      "label": "Global Reading Width",
+      "label": "Reading Width",
       "default": "medium",
       "options": [
         { "value": "narrow", "label": "Narrow" },
@@ -275,10 +322,7 @@
       "label": "Bottom Padding",
       "default": 60
     },
-    {
-      "type": "header",
-      "content": "Global Colors"
-    },
+    { "type": "header", "content": "Global Colors" },
     { "type": "color", "id": "bg_color", "label": "Page Background", "default": "#FFFFFF" },
     { "type": "color", "id": "title_color", "label": "Headings Color", "default": "#111827" },
     { "type": "color", "id": "text_color", "label": "Body Text Color", "default": "#374151" },
@@ -298,7 +342,7 @@
         {
           "type": "select",
           "id": "alignment",
-          "label": "Text Alignment",
+          "label": "Alignment",
           "default": "center",
           "options": [
             { "value": "left", "label": "Left" },
@@ -322,19 +366,14 @@
           "label": "Image Height",
           "default": "medium",
           "options": [
-            { "value": "small", "label": "Small (Banner)" },
-            { "value": "medium", "label": "Medium (Cinematic)" },
-            { "value": "large", "label": "Large (Portrait)" }
+            { "value": "small", "label": "Small" },
+            { "value": "medium", "label": "Medium" },
+            { "value": "large", "label": "Large" }
           ]
         }
       ]
     },
-    {
-      "type": "article_content",
-      "name": "Article Content",
-      "limit": 1,
-      "settings": []
-    },
+    { "type": "article_content", "name": "Article Content", "limit": 1 },
     {
       "type": "article_tags",
       "name": "Tags",
@@ -371,19 +410,11 @@
         }
       ]
     },
-    {
-      "type": "article_comments",
-      "name": "Comments",
-      "limit": 1,
-      "settings": []
-    }
+    { "type": "article_comments", "name": "Comments", "limit": 1 }
   ],
   "presets": [
     {
-      "name": "Article Template",
-      "settings": {
-        "container_width": "medium"
-      },
+      "name": "Premium Article SEO",
       "blocks": [
         { "type": "article_header" },
         { "type": "featured_image" },

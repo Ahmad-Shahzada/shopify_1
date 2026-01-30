@@ -1,0 +1,64 @@
+{% if paginate.pages > 1 %}
+  <nav class="mt-24 flex justify-center items-center gap-4 md:gap-8" role="navigation" aria-label="Pagination">
+    
+    {% comment %} PREVIOUS BUTTON {% endcomment %}
+    {% if paginate.previous %}
+      <a href="{{ paginate.previous.url }}" 
+         class="group flex items-center justify-center w-12 h-12 rounded-full border border-gray-200 hover:border-black transition-all duration-300 shadow-sm hover:shadow-md"
+         aria-label="Previous Page">
+        <svg class="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </a>
+    {% else %}
+      {% comment %} Disabled state for previous {% endcomment %}
+      <div class="w-12 h-12 rounded-full border border-gray-100 flex items-center justify-center opacity-30 cursor-not-allowed">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </div>
+    {% endif %}
+
+    {% comment %} PAGE NUMBERS {% endcomment %}
+    <div class="flex items-center gap-2 md:gap-4">
+      {% for part in paginate.parts %}
+        {% if part.is_link %}
+          <a href="{{ part.url }}" 
+             class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-xl text-sm font-bold opacity-40 hover:opacity-100 hover:bg-gray-50 transition-all">
+            {{ part.title }}
+          </a>
+        {% else %}
+          {% if part.title == paginate.current_page %}
+            <span class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-xl bg-black text-white text-sm font-black shadow-lg">
+              {{ part.title }}
+            </span>
+          {% else %}
+            {% comment %} This handles ellipses (...) {% endcomment %}
+            <span class="w-10 h-10 flex items-center justify-center opacity-30 text-sm font-bold">
+              {{ part.title }}
+            </span>
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    {% comment %} NEXT BUTTON {% endcomment %}
+    {% if paginate.next %}
+      <a href="{{ paginate.next.url }}" 
+         class="group flex items-center justify-center w-12 h-12 rounded-full border border-gray-200 hover:border-black transition-all duration-300 shadow-sm hover:shadow-md"
+         aria-label="Next Page">
+        <svg class="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </a>
+    {% else %}
+      {% comment %} Disabled state for next {% endcomment %}
+      <div class="w-12 h-12 rounded-full border border-gray-100 flex items-center justify-center opacity-30 cursor-not-allowed">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </div>
+    {% endif %}
+
+  </nav>
+{% endif %}
